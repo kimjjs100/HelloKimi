@@ -25,6 +25,7 @@ pwm = Adafruit_PCA9685.PCA9685()
 pwm.set_pwm_freq(50)
 # 서보모터에 최적화된 Hz로 펄스주기를 설정.
 # 해당 프로젝트에서의 서브모터는 50Hz가 최적값인듯.
+# wow
 
 front_left = 12
 front_right = 13
