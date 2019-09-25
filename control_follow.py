@@ -2,8 +2,16 @@
 # These codes only for Comment
 
 from __future__ import division
+# 정수(integer)끼리 나눗셈하면, quotient만 남기고 remainder는 버리는데,
+# 해당 코드를 추가하면, 나눗셈연산자(/, //)가 바뀌면서 결과를 float로 표현하게됨(Remainder를 포함하게됨)
 import Adafruit_PCA9685
+# PCA9685모듈을 임포트
+# sudo pip3 install adafruit-pca9685 //파이썬3를 사용할 때
 import RPi.GPIO as GPIO
+# 라즈베리파이 RPi.GPIO 모듈(for 센서제어) : https://blog.naver.com/pk3152/221368513358
+# GPIO는 General-purpose input/output 를 말함.
+# pinMode()로 입력 또는 출력으로 설정한 후,
+# digitalRead()함수 또는 digitalWrite()함수로 입력이나 출력을 하는 핀을 말함
 import socket, threading, time
 
 ip = '192.168.43.160'
@@ -11,7 +19,12 @@ ip = '192.168.43.160'
 Encode = {'A' : 370, 'B' : 370, 'C' : 280, 'D' : 280, 'E' : 30}
         #    car    /   person /   red    /   green  /  stop_sign
 pwm = Adafruit_PCA9685.PCA9685()
+# pwm = Adafruit_PCA9685.PCA9685(address=0x41, busnum=2)
+# PWM(Pulse Width Modulation)은 디지털 출력핀인데 아날로그 출력이라는 이름으로 사용
+
 pwm.set_pwm_freq(50)
+# 서보모터에 최적화된 Hz로 펄스주기를 설정.
+# 해당 프로젝트에서의 서브모터는 50Hz가 최적값인듯.
 
 front_left = 12
 front_right = 13
