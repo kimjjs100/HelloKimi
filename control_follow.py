@@ -18,6 +18,7 @@ ip = '192.168.43.160'
 
 Encode = {'A' : 370, 'B' : 370, 'C' : 280, 'D' : 280, 'E' : 30}
         #    car    /   person /   red    /   green  /  stop_sign
+
 pwm = Adafruit_PCA9685.PCA9685()
 # pwm = Adafruit_PCA9685.PCA9685(address=0x41, busnum=2)
 # PWM(Pulse Width Modulation)은 디지털 출력핀인데 아날로그 출력이라는 이름으로 사용
@@ -25,37 +26,61 @@ pwm = Adafruit_PCA9685.PCA9685()
 pwm.set_pwm_freq(50)
 # 서보모터에 최적화된 Hz로 펄스주기를 설정.
 # 해당 프로젝트에서의 서브모터는 50Hz가 최적값인듯.
-# wow
 
 front_left = 12
 front_right = 13
 back_left = 15
 back_right = 11
+# 핀 번호
 
 GPIO.setmode(GPIO.BOARD)
+# 핀 번호를 참조하는 방식에 대한 함수는 크게 2가지가 있음.
+# GPIO.setmode(GPIO.BOARD) 와 GPIO.setmode(GPIO.BCM)
+# BOARD 모드 - 핀 번호를 라즈베리파이의 보드 번호를 참조해서 사용
+# BCM 모드 - 핀 번호를 GPIO모듈 번호로 사용
+# 자세한 정보는 블로그 참조요망: https://blog.naver.com/pk3152/221368513358
+
 GPIO.setup(front_left, GPIO.OUT)
 GPIO.setup(front_right, GPIO.OUT)
 GPIO.setup(back_left, GPIO.OUT)
 GPIO.setup(back_right, GPIO.OUT)
-#390
+# 출력핀 설정
+
 CAR_CENTER = 405
 CENTER = 307
 center = CENTER
 SPEED = 1300
+# 서보모터의 펄스 길이를 최소, 중간, 최대로 설정
+# pulse length out of 4096
+
 
 CUR_SPEED = SPEED
 pwm.set_pwm(0, 0, CENTER)
+# pwm.set_pwm(channel, 0, pulse)
+# 0번 서보를 CENTER(307)으로 설정
 
 def straight(pwm=pwm, GPIO=GPIO, speed=CUR_SPEED, center=CENTER):
+# 직진에 대한 정의
     pwm.set_pwm(0, 0, center)
     pwm.set_pwm(4, 0, speed)
     pwm.set_pwm(5, 0, speed)
+    # 4,5번 서보모터를 speed(1300)으로 설정
     GPIO.output(front_left, GPIO.HIGH)
     GPIO.output(front_right, GPIO.HIGH)
+    # 앞 바퀴 2개 모두 직진.
+    # < 출력핀에 5V를 내보낼 때, 2가지 설정 방법 (택1) >
+    # GPIO.output(pin번호,GPIO.HIGH)
+    # GPIO.output(pin번호,True)
+
     GPIO.output(back_left, GPIO.LOW)
     GPIO.output(back_right, GPIO.LOW)
+    # 뒷 바퀴 2개 모두 출력신호 없음(전륜구동인듯).
+    # < 출력핀에 0V를 내보낼 때, 2가지 설정 방법 (택1) >
+    # GPIO.output(pin번호,GPIO.LOW)
+    # GPIO.output(pin번호,False)
 
 def stop(pwm=pwm, GPIO=GPIO, speed=CUR_SPEED):
+# 정지에 대한 정의
     pwm.set_pwm(4, 0, speed)
     pwm.set_pwm(5, 0, speed)
     GPIO.output(front_left, GPIO.HIGH)
@@ -64,6 +89,7 @@ def stop(pwm=pwm, GPIO=GPIO, speed=CUR_SPEED):
     GPIO.output(back_right, GPIO.LOW)
 
 def left(pwm=pwm, GPIO=GPIO, speed=CUR_SPEED, center=CENTER, turn=100):
+# 좌회전에 대한 정의
     pwm.set_pwm(0, 0, center + turn)  # 410
     pwm.set_pwm(4, 0, speed)
     pwm.set_pwm(5, 0, speed)
@@ -73,6 +99,7 @@ def left(pwm=pwm, GPIO=GPIO, speed=CUR_SPEED, center=CENTER, turn=100):
     GPIO.output(back_right, GPIO.LOW)
 
 def right(pwm=pwm, GPIO=GPIO, speed=CUR_SPEED, center=CENTER, turn=100):
+#우회전에 대한 정의
     pwm.set_pwm(0, 0, center - turn)  # 210
     pwm.set_pwm(4, 0, speed)
     pwm.set_pwm(5, 0, speed)
@@ -85,6 +112,8 @@ Object = False
 Bus_stop = False
 Obstacle = False
 red_light = False
+# 해당 시그널을 확인하면 멈춤
+
 
 def from_line():
     global Object, Bus_stop, Obstacle, red_light
