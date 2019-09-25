@@ -116,18 +116,52 @@ red_light = False
 
 
 def from_line():
+    # Lane Detection/line.py을 불러옴
     global Object, Bus_stop, Obstacle, red_light
+    # 전역변수 설정 이유 (원저자 답변 )
+    # : Multi Threading으로 각종 센서에서 받은 결과값을 바탕으로 RC카 제어하기 위해 사용
+
+    # Local 변수는 그 폼에서만 변수를 공유할 수 있음,
+    # Global함수는 모든 폼에서 해당 함수를 사용할 수 있음
+
+    # 하지만.. " global 문은 사용하지 않는 것이 좋다 "
+    # global 문을 사용하는 것은 함수가 매개변수와 반환값을 이용해 외부와 소통하는 자연스러운 흐름을 깨트리는 일.
+
+    # 함수 안에서 전역변수를 수정하지 않고,
+    # 매개변수와 반환값만 이용하더라도 함수의 실행 결과를 누적하는 데 부족함이 없다.
+
+    # 결론 : 다른 사람의 프로그램을 읽을 수 있도록 global 문의 사용법을 알아두되,
+    # 가급적이면 사용하지 않도록 하자.(return 권장)
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # socket( ) 함수는 데이터 전송에 사용되는 소켓을 생성할 때 호출
+    # int socket(int domain, int type, int protocol);
+    # socket(AF_INET, SOCK_STREAM) : 인터넷 도메인 연결형 서비스
+
     server_address = (ip, 3442)
+    # 3442는 Local Address
+
     print("line socket listening...")
     sock.bind(server_address)
+    # bind()함수는, socket( ) 함수로 소켓을 생성하면 소켓 디스크립터가 반환됨.
+    # 이 디스크립터를 이용해 상대 프로세스와 통신하려면 먼저 생성된 소켓에 주소를 부여해야 함.
+    # bind( ) 함수가 소켓에 주소를 부여하는 기능을 수행
+
     sock.listen(1)
+    # int listen(int s, int backlog)
+    # listen( ) 함수는 서버 프로그램에서 실행되며,
+    # 첫 번째 매개변수 s는 소켓에서 대기할 수 있는 클라이언트의 연결 요청 개수를 지정
 
     try:
         client, address = sock.accept()
+        # 클라이언트-서버 환경에서 서버 프로세스는 accept( ) 함수를 실행해 클라이언트의 요청을 기다리고,
+        # 클라이언트 프로세스의 connect( ) 요청이 발생하면 연결이 설정
+
         print("Line Connected")
         while True:
             data = client.recv(4)
+            # recv( ) 함수를 사용하여 상대 프로세스가 전송한 데이터를 소켓을 통해 읽을 수 있음(for 연결형 서비스)
+
             if Object or Bus_stop or Obstacle or red_light:
                 #print("stop")
                 stop(speed=0)
@@ -147,13 +181,17 @@ def from_line():
                 k = int((x_point - CAR_CENTER) / 4)
                 #print("right : ", x_point, " -> ", k + CENTER)
                 left(speed=CUR_SPEED + 100, turn=k)
+            # 차선 유지를 위한 작업
     except:
         print("close line")
         GPIO.cleanup()
+        # GPIO모듈의 모든 리소스들을 해제
+        # GPIO모듈을 사용한 마지막에 적어주시면 좋다고 함
         exit(0)
 
 
 def from_YOLO():
+    # YOLO/에서 불러옴
     global Object, Bus_stop, Obstacle, CUR_SPEED, red_light
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = (ip, 3443)
@@ -178,9 +216,12 @@ def from_YOLO():
                 continue
 
             if Encode[Type] < ymax:
+                # y....?? 물체까지 거리인가?
                 stop(speed=0)
                 if Type == 'C':
                     red_light = True
+                    # Encode = {'car' : 'A', 'person' : 'B',
+                    # 'red' : 'C', 'green' : 'D', 'stop_sign' : 'E'}
                 elif Type == 'D':
                     red_light = False
                 else:
@@ -209,6 +250,7 @@ def from_YOLO():
         exit(1)
 
 def from_RFID():
+    # /Raspberrypi_sensor/RFID.py 파일에서 불러옴
     global Bus_stop, Obstacle
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = (ip, 3444)
