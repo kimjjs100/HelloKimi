@@ -204,6 +204,9 @@ def from_YOLO():
         while True:
             data = client.recv(4)
             if data == 'gogo':
+                # 이유는 잘 모르겠으나,
+                # Raspberrypi_sensor/RFID.py & Ultra.py에
+                # 'gogo', 'stop'이 정의되어 있음
                 if not Bus_stop and not Obstacle:
                     print("Object : GO")
                     stop(speed=SPEED)
@@ -307,11 +310,22 @@ LINE.start()
 DETECT.start()
 RFID.start()
 ULTRA.start()
+# start() 메서드
+# - run() 메서드 안의 내용이 멀티 쓰레드로 실행될 수 있도록 작업을 함
+# - 즉, 호출 스택(call stack)을 생성해서 run()이 첫번째로 저장되게 함
+# - 호출 스택이 2개 이상인 때에는 스케줄러에 의해서 호출 스택에 들어 있는 메서드가 번갈아 실행됨
+
+# run() 메서드
+# - run() 메서드만 호출하는 것도 물론 가능
+# - 하지만, 멀티 쓰레드로 실행되는 게 아니라 단순히 run()이라는 이름의 싱글 쓰레드만 실행됨
 
 LINE.join()
 DETECT.join()
 RFID.join()
 ULTRA.join()
+# .join() 인가...? ㅠ 왜쓰지..?ㅜㅠ
+
+
 
 pwm.set_pwm(0, 0, 0)
 GPIO.cleanup()
